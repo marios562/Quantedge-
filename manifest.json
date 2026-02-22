@@ -1,0 +1,67 @@
+{
+  "name": "QuantEdge — AI Stock Ratings",
+  "short_name": "QuantEdge",
+  "description": "Algorithmic quant ratings for stocks. Powered by 500+ metrics.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#06080f",
+  "theme_color": "#4fffb0",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "business"],
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/screen1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "QuantEdge Stock Analysis"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Analyze MRVL",
+      "short_name": "MRVL",
+      "url": "/index.html?ticker=MRVL",
+      "description": "Quick analysis of Marvell Technology"
+    },
+    {
+      "name": "Analyze NVDA",
+      "short_name": "NVDA",
+      "url": "/index.html?ticker=NVDA",
+      "description": "Quick analysis of NVIDIA"
+    }
+  ],
+  "prefer_related_applications": false
+}
