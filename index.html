@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>QuantEdge — AI-Powered Stock Screener</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4fffb0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QuantEdge">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+:root{--bg:#06080f;--surface:#0c0f1a;--surface2:#131829;--surface3:#1a2035;--border:#1f2640;--border2:#2a3356;--text:#e2e8f8;--text-dim:#6b7799;--text-muted:#2e3a5c;--accent:#4fffb0;--accent2:#00d4ff;--warn:#ffb547;--danger:#ff4d6d;--grade-aplus:#00ff87;--grade-a:#4fffb0;--grade-b:#7dd8ff;--grade-c:#ffda6b;--grade-d:#ff9248;--grade-f:#ff4d6d;--glow:rgba(79,255,176,0.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;animation:float 20s ease-in-out infinite}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(79,255,176,0.04),transparent);top:-150px;left:-150px}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,255,0.04),transparent);bottom:-100px;right:-100px;animation-delay:-8s}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(255,181,71,0.03),transparent);top:40%;left:50%;animation-delay:-14s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-30px) scale(1.05)}66%{transform:translate(-20px,20px) scale(0.96)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes splashPulse{0%,100%{box-shadow:0 0 0 0 rgba(79,255,176,0.4)}50%{box-shadow:0 0 0 20px rgba(79,255,176,0)}}
+@keyframes splashLoad{from{width:0%}to{width:100%}}
+.app{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:0 24px 80px}
+nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:48px}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;color:#fff}
+.logo-dot{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.nav-badge{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);border:1px solid var(--border);padding:4px 10px;border-radius:20px;letter-spacing:0.1em}
+.hero{margin-bottom:48px;animation:fadeUp 0.6s ease both}
+.hero h1{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:#fff;margin-bottom:12px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--text-dim);font-size:15px;max-width:560px;line-height:1.6}
+.search-wrap{display:flex;gap:12px;margin-bottom:40px;animation:fadeUp 0.6s 0.1s ease both}
+.search-box{flex:1;display:flex;align-items:center;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:0 18px;gap:12px;transition:border-color 0.2s,box-shadow 0.2s}
+.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,255,176,0.08)}
+.search-box span{color:var(--text-dim);font-size:16px}
+.search-box input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:15px;padding:16px 0;text-transform:uppercase;letter-spacing:0.1em}
+.search-box input::placeholder{color:var(--text-muted);text-transform:none;letter-spacing:0}
+.btn-analyze{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;padding:0 28px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#06080f;cursor:pointer;letter-spacing:0.05em;transition:transform 0.15s,box-shadow 0.15s;white-space:nowrap}
+.btn-analyze:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(79,255,176,0.25)}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:48px;animation:fadeUp 0.6s 0.15s ease both}
+.chip{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 14px;border:1px solid var(--border2);border-radius:20px;color:var(--text-dim);cursor:pointer;transition:all 0.15s;background:var(--surface);letter-spacing:0.05em}
+.chip:hover,.chip.active{border-color:var(--accent);color:var(--accent);background:var(--glow)}
+.score-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px 32px;margin-bottom:24px;animation:fadeUp 0.5s ease both}
+.ticker-info .ticker{font-size:2rem;font-weight:800;color:#fff;letter-spacing:-0.02em}
+.ticker-info .name{font-size:13px;color:var(--text-dim);margin-top:2px}
+.ticker-info .sector{display:inline-block;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);letter-spacing:0.1em}
+.overall-score{text-align:center}
+.score-circle{width:90px;height:90px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 6px;position:relative}
+.score-circle::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(var(--accent) var(--pct,0%),var(--surface3) 0%);z-index:-1}
+.score-circle::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--surface);z-index:-1}
+.score-num{font-size:1.8rem;font-weight:800;color:#fff;line-height:1}
+.score-max{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.score-label{font-size:11px;color:var(--text-dim);letter-spacing:0.1em}
+.price-info{text-align:right}
+.price-info .price{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:700;color:#fff}
+.price-info .change{font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:4px}
+.change.up{color:var(--accent)}.change.down{color:var(--danger)}
+.price-info .mkt-cap{font-size:12px;color:var(--text-dim);margin-top:6px}
+.rec-badge{display:inline-block;margin-top:10px;padding:5px 16px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.08em}
+.rec-strong-buy{background:rgba(79,255,176,0.12);color:var(--accent);border:1px solid rgba(79,255,176,0.3)}
+.rec-buy{background:rgba(125,216,255,0.12);color:var(--accent2);border:1px solid rgba(125,216,255,0.3)}
+.rec-hold{background:rgba(255,218,107,0.12);color:var(--warn);border:1px solid rgba(255,218,107,0.3)}
+.rec-sell{background:rgba(255,77,109,0.12);color:var(--danger);border:1px solid rgba(255,77,109,0.3)}
+.factor-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px}
+.factor-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 18px;cursor:pointer;transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;animation:fadeUp 0.5s ease both}
+.factor-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.factor-card.active-card{border-color:var(--accent);box-shadow:0 0 0 1px rgba(79,255,176,0.2)}
+.factor-icon{font-size:20px;margin-bottom:10px}
+.factor-name{font-size:11px;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:10px;font-weight:600}
+.grade-badge{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;line-height:1}
+.grade-score{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:4px}
+.gAp{color:var(--grade-aplus)}.gA{color:var(--grade-a)}.gB{color:var(--grade-b)}.gC{color:var(--grade-c)}.gD{color:var(--grade-d)}.gF{color:var(--grade-f)}
+.detail-panel{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px 32px;margin-bottom:32px;display:none;animation:fadeUp 0.4s ease both}
+.detail-panel.visible{display:block}
+.detail-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.detail-header h3{font-size:1rem;font-weight:700;color:#fff}
+.close-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text-dim);padding:4px 10px;cursor:pointer;font-size:13px;transition:all 0.15s}
+.close-btn:hover{border-color:var(--border2);color:var(--text)}
+.metrics-table{width:100%;border-collapse:collapse}
+.metrics-table tr{border-bottom:1px solid rgba(255,255,255,0.03)}
+.metrics-table tr:hover{background:rgba(255,255,255,0.02)}
+.metrics-table td{padding:11px 12px;font-size:13px}
+.metrics-table td:first-child{color:var(--text-dim)}
+.metrics-table td:nth-child(2){font-family:'JetBrains Mono',monospace;color:var(--text);text-align:right}
+.metrics-table td:nth-child(3){font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right}
+.metrics-table td:nth-child(4){text-align:right}
+.mini-bar-wrap{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.mini-bar-track{background:var(--surface3);border-radius:2px;height:4px;width:80px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:2px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1)}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}
+.chart-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+.chart-panel h4{font-size:11px;font-weight:600;letter-spacing:0.12em;color:var(--text-dim);text-transform:uppercase;margin-bottom:20px}
+canvas{display:block}
+.compare-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 32px;margin-bottom:32px}
+.compare-section h4{font-size:12px;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:16px}
+.compare-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.compare-stock{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;transition:border-color 0.15s}
+.compare-stock:hover{border-color:var(--accent2)}
+.vs-badge{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:0.1em}
+::-webkit-scrollbar{width:6px;background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.loading-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;z-index:999;transition:width 0.4s ease,opacity 0.3s ease}
+.method-note{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:16px 20px;font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:32px}
+.method-note strong{color:var(--text)}
+.splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity 0.5s ease,visibility 0.5s ease}
+.splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.splash-logo{width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;animation:splashPulse 1.5s ease infinite}
+.splash h2{font-size:1.4rem;font-weight:800;color:#fff}
+.splash p{font-size:12px;color:var(--text-dim);letter-spacing:0.15em}
+.splash-bar{width:120px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-top:8px}
+.splash-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:splashLoad 1.4s ease forwards}
+.offline-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.4);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--danger);z-index:1001;transition:transform 0.3s ease;white-space:nowrap}
+.offline-toast.visible{transform:translateX(-50%) translateY(0)}
+.install-banner{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);width:calc(100% - 48px);max-width:480px;background:var(--surface2);border:1px solid var(--accent);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;z-index:1000;box-shadow:0 8px 40px rgba(0,0,0,0.6);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1)}
+.install-banner.visible{transform:translateX(-50%) translateY(0)}
+.install-banner .ib-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.install-banner .ib-text{flex:1}
+.install-banner .ib-text strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+.install-banner .ib-text span{font-size:11px;color:var(--text-dim)}
+.install-banner .ib-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-install{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;padding:8px 16px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#06080f;cursor:pointer;white-space:nowrap}
+.btn-dismiss-install{background:none;border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--text-dim);cursor:pointer}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(12,15,26,0.96);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:100}
+.bottom-nav-items{display:flex;justify-content:space-around}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 16px;cursor:pointer;color:var(--text-dim);transition:color 0.15s;border:none;background:none;font-family:'Syne',sans-serif}
+.bnav-item.active{color:var(--accent)}
+.bnav-item span:first-child{font-size:18px}
+.bnav-item span:last-child{font-size:9px;letter-spacing:0.05em;font-weight:600}
+@media(max-width:900px){.factor-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.charts-row{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .bottom-nav{display:block}
+  .app{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+  nav{padding-top:calc(24px + env(safe-area-inset-top))}
+  .hero h1{font-size:1.8rem}
+  .score-header{grid-template-columns:1fr 1fr}
+  .score-header .ticker-info{grid-column:1/-1}
+  .search-wrap{flex-direction:column}
+  .btn-analyze{padding:16px;width:100%}
+  .factor-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="loading-bar" id="loadingBar"></div>
+<div class="splash" id="splash">
+  <div class="splash-logo">⚡</div>
+  <h2>QuantEdge</h2>
+  <p>AI STOCK RATINGS</p>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+<div class="offline-toast" id="offlineToast">📡 Offline — εμφανίζονται cached δεδομένα</div>
+<div class="install-banner" id="installBanner">
+  <div class="ib-icon">⚡</div>
+  <div class="ib-text">
+    <strong>Εγκατάστασε το QuantEdge</strong>
+    <span>Πρόσβαση χωρίς browser — σαν native app</span>
+  </div>
+  <div class="ib-actions">
+    <button class="btn-install" id="btnInstall">Εγκατάσταση</button>
+    <button class="btn-dismiss-install" onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+<div class="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bnav-item active" onclick="bnav('home',this)"><span>📊</span><span>SCREEN</span></button>
+    <button class="bnav-item" onclick="bnav('watchlist',this)"><span>⭐</span><span>WATCHLIST</span></button>
+    <button class="bnav-item" onclick="bnav('compare',this)"><span>⚖️</span><span>COMPARE</span></button>
+    <button class="bnav-item" onclick="bnav('alerts',this)"><span>🔔</span><span>ALERTS</span></button>
+  </div>
+</div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="app">
+  <nav>
+    <div class="logo"><div class="logo-dot">⚡</div>QuantEdge</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div class="nav-badge">DEMO v1.0</div>
+      <div class="nav-badge" style="color:var(--accent);border-color:rgba(79,255,176,0.3);">● LIVE DATA READY</div>
+    </div>
+  </nav>
+  <div class="hero">
+    <h1>Intelligent<br><em>Quant Ratings</em></h1>
+    <p>Αλγοριθμική ανάλυση μετοχών βασισμένη σε 500+ metrics. Instant grades, factor breakdown, sector comparison.</p>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Πληκτρολόγησε ticker symbol (π.χ. AAPL)" maxlength="6">
+    </div>
+    <button class="btn-analyze" onclick="analyzeStock()">ANALYZE →</button>
+  </div>
+  <div class="presets" id="presets">
+    <span style="font-size:11px;color:var(--text-muted);align-self:center;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;">QUICK:</span>
+    <div class="chip active" onclick="selectPreset('NVDA',this)">NVDA</div>
+    <div class="chip" onclick="selectPreset('META',this)">META</div>
+    <div class="chip" onclick="selectPreset('AAPL',this)">AAPL</div>
+    <div class="chip" onclick="selectPreset('MSFT',this)">MSFT</div>
+    <div class="chip" onclick="selectPreset('GOOGL',this)">GOOGL</div>
+    <div class="chip" onclick="selectPreset('AMZN',this)">AMZN</div>
+    <div class="chip" onclick="selectPreset('TSLA',this)">TSLA</div>
+    <div class="chip" onclick="selectPreset('AVGO',this)">AVGO</div>
+    <div class="chip" onclick="selectPreset('AMD',this)">AMD</div>
+    <div class="chip" onclick="selectPreset('MRVL',this)">MRVL</div>
+    <div class="chip" onclick="selectPreset('CRDO',this)">CRDO</div>
+    <div class="chip" onclick="selectPreset('NFLX',this)">NFLX</div>
+    <div class="chip" onclick="selectPreset('CRM',this)">CRM</div>
+    <div class="chip" onclick="selectPreset('NOW',this)">NOW</div>
+    <div class="chip" onclick="selectPreset('PLTR',this)">PLTR</div>
+    <div class="chip" onclick="selectPreset('UBER',this)">UBER</div>
+    <div class="chip" onclick="selectPreset('V',this)">V</div>
+    <div class="chip" onclick="selectPreset('JPM',this)">JPM</div>
+    <div class="chip" onclick="selectPreset('LLY',this)">LLY</div>
+    <div class="chip" onclick="selectPreset('COIN',this)">COIN</div>
+    <div class="chip" onclick="selectPreset('INTC',this)">INTC</div>
+    <div class="chip" onclick="selectPreset('SHOP',this)">SHOP</div>
+  </div>
+  <div class="method-note">
+    <strong>Πώς λειτουργεί ο αλγόριθμος:</strong> Κάθε μετοχή βαθμολογείται με <strong>percentile ranking vs το sector της</strong> σε 5 κατηγορίες. Δεν εξετάζει απόλυτες τιμές — μόνο σχετική θέση vs peers. Ο τελικός βαθμός (1–5) είναι weighted average με ανακατανομή ανάλογα με macro conditions.
+  </div>
+  <div id="scoreArea" style="display:none;">
+    <div class="score-header" id="scoreHeader">
+      <div class="ticker-info">
+        <div class="ticker" id="hTicker">—</div>
+        <div class="name" id="hName">—</div>
+        <div class="sector" id="hSector">—</div>
+        <div id="hRec" class="rec-badge" style="margin-top:10px;">—</div>
+      </div>
+      <div class="overall-score">
+        <div class="score-circle" id="scoreCircle" style="--pct:0%">
+          <span class="score-num" id="scoreNum">—</span>
+          <span class="score-max">/5.0</span>
+        </div>
+        <div class="score-label">QUANT SCORE</div>
+      </div>
+      <div class="price-info">
+        <div class="price" id="hPrice">—</div>
+        <div class="change" id="hChange">—</div>
+        <div class="mkt-cap" id="hMktCap">—</div>
+      </div>
+    </div>
+    <div class="factor-grid" id="factorGrid"></div>
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-header">
+        <h3 id="detailTitle">—</h3>
+        <button class="close-btn" onclick="closeDetail()">✕ κλείσιμο</button>
+      </div>
+      <table class="metrics-table" id="detailTable"></table>
+    </div>
+    <div class="charts-row">
+      <div class="chart-panel"><h4>Factor Radar</h4><canvas id="radarCanvas" width="360" height="300"></canvas></div>
+      <div class="chart-panel"><h4>Sector Percentile Ranking</h4><canvas id="barCanvas" width="360" height="300"></canvas></div>
+    </div>
+    <div class="compare-section" id="compareSection"></div>
+  </div>
+</div>
+
+<script>
+const STOCKS = {
+  MRVL:{name:"Marvell Technology, Inc.",sector:"SEMICONDUCTORS",price:"$80.46",change:-26.1,mktCap:"$70.1B Market Cap",overallScore:4.1,recommendation:"BUY",factors:{valuation:{grade:"A",score:8.2,pct:82,trend:"↑ improving",desc:"Αποτίμηση vs Sector",metrics:[["Forward P/E","24.7×","Top 22% sector",78],["P/S Ratio","9.0×","Top 30% sector",70],["EV/EBITDA","29.8×","Top 25% sector",75],["PEG Ratio","0.62","Top 10% sector",90],["P/FCF","44.3×","Top 35% sector",65]]},growth:{grade:"B",score:6.8,pct:68,trend:"↑ accelerating",desc:"Ανάπτυξη Εσόδων/EPS",metrics:[["Revenue Growth YoY","+37%","Top 32% sector",68],["EPS Growth YoY","+42%","Top 28% sector",72],["Revenue 3Y CAGR","+18%","Top 40% sector",60],["Next Year EPS Est.","+38%","Top 25% sector",75],["Analyst Revisions","↑ +14%","Positive trend",71]]},profitability:{grade:"B",score:6.5,pct:65,trend:"→ stable",desc:"Κερδοφορία & Αποδόσεις",metrics:[["Gross Margin","50.7%","Mid sector",55],["Net Margin","31.7%","Top 30% sector",70],["ROE","18.0%","Top 35% sector",65],["ROIC","6.0%","Mid sector",52],["FCF Margin","~20%","Top 28% sector",72]]},momentum:{grade:"C",score:4.2,pct:42,trend:"↓ weak",desc:"Price Momentum",metrics:[["1-Month Return","-8.4%","Below sector",30],["3-Month Return","-18%","Bottom 25%",25],["6-Month Return","-24%","Bottom 30%",30],["YTD Return","-26.1%","Lagging sector",35],["vs S&P 500","-34%","Significant lag",28]]},revisions:{grade:"A",score:7.9,pct:79,trend:"↑ strong",desc:"EPS Estimate Revisions",metrics:[["EPS Rev. 30D","+3.2%","Top 20% sector",80],["EPS Rev. 90D","+8.1%","Top 15% sector",85],["Buy Ratings","29/32 = 91%","Very bullish",88],["Avg PT","$111.28","+38% upside",82],["Beat Rate 4Q","4/4","Consistent beater",90]]}},compare:{ticker:"CRDO",grade:"A",score:4.3}},
+  CRDO:{name:"Credo Technology Group Holding",sector:"SEMICONDUCTORS",price:"$124.06",change:73.5,mktCap:"$24.0B Market Cap",overallScore:4.3,recommendation:"STRONG BUY",factors:{valuation:{grade:"D",score:2.1,pct:21,trend:"↓ expensive",desc:"Αποτίμηση vs Sector",metrics:[["Forward P/E","39.4×","Bottom 20% sector",20],["P/S Ratio","33.6×","Bottom 10% sector",10],["EV/EBITDA","109.0×","Bottom 8% sector",8],["PEG Ratio","N/A","N/A — High growth",null],["P/FCF","420×","Premium priced",12]]},growth:{grade:"A+",score:9.8,pct:98,trend:"↑↑ explosive",desc:"Ανάπτυξη Εσόδων/EPS",metrics:[["Revenue Growth YoY","+272%","Top 2% sector",98],["EPS Growth YoY","+310%","Top 1% sector",99],["Sequential QoQ","+51%","Top 3% sector",97],["Next Year Rev. Est.","+95%","Top 2% sector",98],["TAM Expansion","AEC dominance","Strong tailwind",95]]},profitability:{grade:"A",score:8.6,pct:86,trend:"↑ rapid expansion",desc:"Κερδοφορία & Αποδόσεις",metrics:[["Gross Margin","67.5%","Top 12% sector",88],["Net Margin","26.6%","Top 20% sector",80],["ROE","22.9%","Top 15% sector",85],["ROIC","~15%","Top 18% sector",82],["Debt/Equity","0.013×","Top 5% sector",95]]},momentum:{grade:"A+",score:9.2,pct:92,trend:"↑↑ strong",desc:"Price Momentum",metrics:[["1-Month Return","+12%","Top 8% sector",92],["3-Month Return","+28%","Top 10% sector",90],["6-Month Return","+55%","Top 8% sector",92],["1-Year Return","+73.5%","Top 10% sector",90],["vs Sector ETF","+48%","Strong outperform",93]]},revisions:{grade:"A",score:8.4,pct:84,trend:"↑↑ very bullish",desc:"EPS Estimate Revisions",metrics:[["EPS Rev. 30D","+12%","Top 8% sector",92],["EPS Rev. 90D","+31%","Top 5% sector",95],["Buy Ratings","16/17 = 94%","Near unanimous",94],["Avg PT","$217.08","+75% upside",90],["Beat Rate 4Q","4/4","Consistent beater",90]]}},compare:{ticker:"MRVL",grade:"B+",score:4.1}},
+  NVDA:{name:"NVIDIA Corporation",sector:"SEMICONDUCTORS",price:"$135.84",change:41.2,mktCap:"$3.32T Market Cap",overallScore:4.7,recommendation:"STRONG BUY",factors:{valuation:{grade:"C",score:5.1,pct:51,trend:"→ premium justified",desc:"Αποτίμηση vs Sector",metrics:[["Forward P/E","30.1×","Premium",55],["P/S","25×","Top 15%",85],["EV/EBITDA","46×","Mid-high",55],["PEG","0.8","Reasonable",70],["P/FCF","38×","Fair",60]]},growth:{grade:"A+",score:9.7,pct:97,trend:"↑↑ dominant",desc:"Ανάπτυξη Εσόδων/EPS",metrics:[["Revenue Growth","+122%","Top 1%",99],["EPS Growth","+145%","Top 1%",99],["DC Revenue","+142%","AI leader",99],["FY26 Guide","+65%","Strong",97],["Market Share","~80% AI GPU","Dominant",99]]},profitability:{grade:"A+",score:9.5,pct:95,trend:"↑↑ exceptional",desc:"Κερδοφορία",metrics:[["Gross Margin","74.6%","Top 3%",97],["Net Margin","55%","Top 1%",99],["ROE","115%","Exceptional",99],["ROIC","90%","Best-in-class",99],["FCF Margin","50%+","Top 1%",99]]},momentum:{grade:"A",score:8.0,pct:80,trend:"↑ strong",desc:"Price Momentum",metrics:[["1M","+8%","Top 15%",85],["3M","+18%","Top 12%",88],["6M","+35%","Top 10%",90],["1Y","+41%","Top 15%",85],["vs SPY","+28%","Outperform",82]]},revisions:{grade:"A+",score:9.0,pct:90,trend:"↑↑ bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+7%","Top 5%",95],["EPS Rev 90D","+22%","Top 3%",97],["Buy Ratings","62/65=95%","Dominant buy",95],["Avg PT","$184","35% upside",90],["Beat Rate","8/8Q","Perfect",99]]}},compare:{ticker:"AMD",grade:"B",score:3.4}},
+  AAPL:{name:"Apple Inc.",sector:"CONSUMER TECH",price:"$244.11",change:5.8,mktCap:"$3.68T Market Cap",overallScore:3.8,recommendation:"BUY",factors:{valuation:{grade:"C",score:5.0,pct:50,trend:"→ fair value",desc:"Αποτίμηση",metrics:[["P/E","32×","High for growth",52],["P/S","9.2×","Mid",60],["EV/EBITDA","24×","Fair",58],["PEG","2.8","High",38],["Div Yield","0.5%","Below avg",40]]},growth:{grade:"C",score:4.8,pct:48,trend:"→ modest",desc:"Ανάπτυξη",metrics:[["Rev Growth","+4%","Below sector",45],["EPS Growth","+11%","Mid",55],["Services Rev","+14%","Strong",68],["iPhone Rev","+1%","Flat",35],["India Expansion","Accelerating","+positive",60]]},profitability:{grade:"A+",score:9.6,pct:96,trend:"↑ exceptional",desc:"Κερδοφορία",metrics:[["Gross Margin","45.9%","Top 8%",92],["Net Margin","26%","Top 5%",95],["ROE","145%","Extraordinary",99],["ROIC","58%","Top 2%",98],["FCF","$107B","Best in class",99]]},momentum:{grade:"B",score:6.2,pct:62,trend:"↑ mild",desc:"Momentum",metrics:[["1M","+3%","Avg",55],["3M","+7%","Mild",60],["6M","+5%","Below",52],["1Y","+5.8%","Underperform",48],["vs SPY","-12%","Lagging",40]]},revisions:{grade:"B",score:6.8,pct:68,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+1.5%","Positive",65],["EPS Rev 90D","+4%","Mild",62],["Buy Ratings","38/45=84%","Bullish",80],["Avg PT","$261","7% upside",58],["Beat Rate","7/8Q","Strong",88]]}},compare:{ticker:"MSFT",grade:"A",score:4.1}},
+  TSLA:{name:"Tesla, Inc.",sector:"AUTOMOTIVE / EV",price:"$341.21",change:-18.4,mktCap:"$1.08T Market Cap",overallScore:2.9,recommendation:"HOLD",factors:{valuation:{grade:"F",score:1.2,pct:12,trend:"↓ expensive",desc:"Αποτίμηση",metrics:[["P/E","120×","Bottom 5%",8],["P/S","8.1×","Bottom 15%",15],["EV/EBITDA","80×","Bottom 10%",10],["PEG","N/A","No earnings growth",5],["P/FCF","250×","Extreme",5]]},growth:{grade:"D",score:3.1,pct:31,trend:"↓ declining",desc:"Ανάπτυξη",metrics:[["Rev Growth","-1.2%","Declining",20],["EPS Growth","-40%","Sharp drop",15],["Deliveries YoY","-8%","Miss",22],["Energy Rev","+113%","Bright spot",80],["FSD Revenue","Emerging","Speculative",50]]},profitability:{grade:"C",score:5.2,pct:52,trend:"↓ compressing",desc:"Κερδοφορία",metrics:[["Gross Margin","17.4%","Below sector",40],["Net Margin","5.7%","Low",42],["ROE","11%","Mid",48],["ROIC","8%","Low",45],["Automotive GM","14.1%","Declining",35]]},momentum:{grade:"C",score:4.5,pct:45,trend:"→ mixed",desc:"Momentum",metrics:[["1M","-12%","Weak",30],["3M","-5%","Mixed",45],["6M","+28%","Strong",72],["1Y","-18.4%","Negative",35],["vs Peers","-8%","Lagging",40]]},revisions:{grade:"D",score:3.0,pct:30,trend:"↓ negative",desc:"EPS Revisions",metrics:[["EPS Rev 30D","-8%","Negative",25],["EPS Rev 90D","-18%","Downgrades",20],["Buy Ratings","22/48=46%","Mixed",38],["Avg PT","$337","~flat",45],["Beat Rate","4/8Q","Inconsistent",40]]}},compare:{ticker:"RIVN",grade:"F",score:1.8}},
+  MSFT:{name:"Microsoft Corporation",sector:"ENTERPRISE TECH",price:"$415.26",change:12.3,mktCap:"$3.08T Market Cap",overallScore:4.4,recommendation:"STRONG BUY",factors:{valuation:{grade:"C",score:5.3,pct:53,trend:"→ justified premium",desc:"Αποτίμηση",metrics:[["P/E","32×","Fair for quality",55],["P/S","12×","Premium",52],["EV/EBITDA","23×","Mid",58],["PEG","1.8","Reasonable",60],["Div Yield","0.8%","Growing",55]]},growth:{grade:"A",score:8.2,pct:82,trend:"↑ AI-driven",desc:"Ανάπτυξη",metrics:[["Rev Growth","+16%","Top 20%",80],["EPS Growth","+24%","Top 18%",82],["Azure Growth","+31%","Strong",88],["Copilot Revenue","Accelerating","AI upside",85],["FY26 Guide","+15%","Consistent",80]]},profitability:{grade:"A+",score:9.4,pct:94,trend:"↑↑ elite",desc:"Κερδοφορία",metrics:[["Gross Margin","70%","Top 5%",95],["Net Margin","35%","Top 3%",97],["ROE","38%","Excellent",90],["ROIC","25%","Top 5%",95],["FCF","$74B","Exceptional",96]]},momentum:{grade:"A",score:7.8,pct:78,trend:"↑ steady",desc:"Momentum",metrics:[["1M","+5%","Above avg",72],["3M","+11%","Strong",78],["6M","+14%","Good",75],["1Y","+12.3%","Market perf",68],["vs QQQ","+1.5%","Inline",62]]},revisions:{grade:"A+",score:9.1,pct:91,trend:"↑↑ strong",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+2.5%","Positive",78],["EPS Rev 90D","+7%","Strong",85],["Buy Ratings","54/58=93%","Near-consensus",93],["Avg PT","$502","21% upside",82],["Beat Rate","7/8Q","Reliable",88]]}},compare:{ticker:"GOOGL",grade:"A",score:4.2}},
+  AMD:{name:"Advanced Micro Devices, Inc.",sector:"SEMICONDUCTORS",price:"$108.44",change:-32.1,mktCap:"$175.2B Market Cap",overallScore:3.4,recommendation:"HOLD",factors:{valuation:{grade:"B",score:6.8,pct:68,trend:"↑ getting cheaper",desc:"Αποτίμηση",metrics:[["Forward P/E","22×","Reasonable",68],["P/S","5.8×","Fair",65],["EV/EBITDA","31×","Mid",62],["PEG","0.9","Attractive",75],["P/FCF","28×","Good",72]]},growth:{grade:"B",score:7.1,pct:71,trend:"↑ solid",desc:"Ανάπτυξη",metrics:[["Rev Growth","+24%","Top 28%",72],["MI300 Growth","+100%+","AI opportunity",85],["EPS Growth","+28%","Good",70],["DC Revenue","Ramping","Accelerating",75],["FY26 Est.","+25%","Strong guide",72]]},profitability:{grade:"C",score:5.5,pct:55,trend:"→ improving",desc:"Κερδοφορία",metrics:[["Gross Margin","53%","Mid sector",58],["Net Margin","6.7%","Low",40],["ROE","3.2%","Low",30],["ROIC","2.8%","Improving",35],["Op Leverage","Building","Potential",60]]},momentum:{grade:"D",score:2.8,pct:28,trend:"↓ weak",desc:"Momentum",metrics:[["1M","-10%","Weak",25],["3M","-22%","Poor",20],["6M","-28%","Bottom quartile",22],["1Y","-32.1%","Lagging",18],["vs NVDA","-73% relative","Losing share",15]]},revisions:{grade:"C",score:5.0,pct:50,trend:"→ mixed",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+0.5%","Flat",52],["EPS Rev 90D","-3%","Mild negative",45],["Buy Ratings","36/50=72%","Moderate",65],["Avg PT","$158","46% upside",78],["Beat Rate","6/8Q","Decent",72]]}},compare:{ticker:"NVDA",grade:"A+",score:4.7}},
+
+  // ── MEGA-CAP TECH ──────────────────────────────────────────────────────────
+  META:{name:"Meta Platforms, Inc.",sector:"SOCIAL / DIGITAL ADS",price:"$638.40",change:28.7,mktCap:"$1.61T Market Cap",overallScore:4.6,recommendation:"STRONG BUY",factors:{valuation:{grade:"B",score:7.2,pct:72,trend:"↑ reasonable",desc:"Αποτίμηση vs Sector",metrics:[["Forward P/E","24×","Fair for growth",72],["P/S","9.8×","Mid-high",68],["EV/EBITDA","18×","Good",76],["PEG","1.1","Attractive",78],["P/FCF","22×","Reasonable",74]]},growth:{grade:"A+",score:9.3,pct:93,trend:"↑↑ AI-driven",desc:"Ανάπτυξη",metrics:[["Rev Growth","+19%","Top 10%",90],["EPS Growth","+73%","Top 3%",97],["Ad Rev YoY","+18%","Accelerating",88],["DAU Growth","+5%","Steady",72],["Reality Labs","Improving","Long-term bet",55]]},profitability:{grade:"A+",score:9.5,pct:95,trend:"↑↑ exceptional",desc:"Κερδοφορία",metrics:[["Gross Margin","81%","Top 5%",95],["Net Margin","38%","Top 2%",97],["ROE","35%","Excellent",90],["ROIC","28%","Top 5%",95],["FCF","$52B","Best-in-class",95]]},momentum:{grade:"A",score:8.2,pct:82,trend:"↑ strong",desc:"Momentum",metrics:[["1M","+9%","Top 15%",85],["3M","+21%","Top 12%",88],["6M","+32%","Top 10%",90],["1Y","+28.7%","Strong",82],["vs SPY","+16%","Outperform",80]]},revisions:{grade:"A",score:8.5,pct:85,trend:"↑↑ very bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+4.2%","Top 10%",90],["EPS Rev 90D","+11%","Top 8%",92],["Buy Ratings","55/60=92%","Near-consensus",92],["Avg PT","$720","13% upside",78],["Beat Rate","7/8Q","Strong",88]]}},compare:{ticker:"GOOGL",grade:"A",score:4.3}},
+
+  GOOGL:{name:"Alphabet Inc.",sector:"INTERNET / DIGITAL ADS",price:"$190.12",change:15.4,mktCap:"$2.34T Market Cap",overallScore:4.3,recommendation:"STRONG BUY",factors:{valuation:{grade:"B",score:7.0,pct:70,trend:"↑ attractive",desc:"Αποτίμηση",metrics:[["Forward P/E","21×","Reasonable",72],["P/S","6.5×","Good",70],["EV/EBITDA","16×","Attractive",75],["PEG","1.2","Good",76],["P/FCF","20×","Fair",70]]},growth:{grade:"A",score:8.4,pct:84,trend:"↑ AI-powered",desc:"Ανάπτυξη",metrics:[["Rev Growth","+15%","Top 18%",82],["EPS Growth","+31%","Top 12%",88],["Cloud Growth","+28%","Accelerating",88],["Search Rev","+12%","Resilient",75],["YouTube Rev","+14%","Good",76]]},profitability:{grade:"A",score:8.8,pct:88,trend:"↑ expanding",desc:"Κερδοφορία",metrics:[["Gross Margin","58%","Top 10%",90],["Net Margin","28%","Top 4%",96],["ROE","32%","Excellent",88],["ROIC","22%","Top 8%",90],["FCF","$65B","Top tier",92]]},momentum:{grade:"B",score:7.0,pct:70,trend:"↑ good",desc:"Momentum",metrics:[["1M","+6%","Above avg",72],["3M","+14%","Strong",78],["6M","+22%","Good",80],["1Y","+15.4%","Market-beating",72],["vs QQQ","+3%","Outperform",65]]},revisions:{grade:"A",score:8.0,pct:80,trend:"↑ bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+3.5%","Positive",80],["EPS Rev 90D","+8%","Strong",85],["Buy Ratings","52/58=90%","Bullish",90],["Avg PT","$225","18% upside",82],["Beat Rate","7/8Q","Reliable",88]]}},compare:{ticker:"META",grade:"A+",score:4.6}},
+
+  AMZN:{name:"Amazon.com, Inc.",sector:"E-COMMERCE / CLOUD",price:"$228.89",change:22.1,mktCap:"$2.43T Market Cap",overallScore:4.5,recommendation:"STRONG BUY",factors:{valuation:{grade:"C",score:5.5,pct:55,trend:"→ premium for growth",desc:"Αποτίμηση",metrics:[["Forward P/E","38×","Premium",48],["P/S","3.5×","Reasonable",65],["EV/EBITDA","22×","Mid",62],["PEG","1.4","Acceptable",68],["P/FCF","30×","Fair",60]]},growth:{grade:"A+",score:9.2,pct:92,trend:"↑↑ AWS accelerating",desc:"Ανάπτυξη",metrics:[["Rev Growth","+11%","Top 22%",78],["EPS Growth","+94%","Top 3%",97],["AWS Growth","+19%","Reaccelerating",90],["Advertising Rev","+18%","Fast growing",88],["Op Income","5× YoY","Exceptional",95]]},profitability:{grade:"A",score:8.5,pct:85,trend:"↑ rapid expansion",desc:"Κερδοφορία",metrics:[["Gross Margin","48%","Top 12%",88],["Net Margin","8.9%","Mid-improving",65],["ROE","22%","Good",75],["ROIC","15%","Top 18%",82],["AWS Margin","37%","High-margin engine",90]]},momentum:{grade:"A",score:8.0,pct:80,trend:"↑ strong",desc:"Momentum",metrics:[["1M","+7%","Strong",78],["3M","+16%","Top 15%",85],["6M","+28%","Top 12%",88],["1Y","+22.1%","Excellent",80],["vs SPY","+10%","Clear outperform",75]]},revisions:{grade:"A",score:8.2,pct:82,trend:"↑↑ bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+5%","Top 8%",92],["EPS Rev 90D","+12%","Top 7%",93],["Buy Ratings","60/65=92%","Strong buy",92],["Avg PT","$270","18% upside",80],["Beat Rate","7/8Q","Reliable",88]]}},compare:{ticker:"MSFT",grade:"A",score:4.4}},
+
+  NFLX:{name:"Netflix, Inc.",sector:"STREAMING / ENTERTAINMENT",price:"$999.80",change:62.5,mktCap:"$425.3B Market Cap",overallScore:4.2,recommendation:"BUY",factors:{valuation:{grade:"C",score:5.2,pct:52,trend:"→ premium",desc:"Αποτίμηση",metrics:[["Forward P/E","44×","Premium",42],["P/S","10.5×","High",45],["EV/EBITDA","32×","Mid-high",52],["PEG","1.5","Moderate",62],["P/FCF","35×","Mid",58]]},growth:{grade:"A",score:8.0,pct:80,trend:"↑ strong",desc:"Ανάπτυξη",metrics:[["Rev Growth","+15%","Top 18%",82],["EPS Growth","+83%","Top 5%",95],["Sub Growth","+19M Q4","Blowout",92],["Ads Tier","Rapid growth","New engine",85],["FY26 Guide","+13%","Above expectations",78]]},profitability:{grade:"A",score:8.3,pct:83,trend:"↑↑ expanding",desc:"Κερδοφορία",metrics:[["Gross Margin","43%","Top 15%",85],["Net Margin","22%","Excellent",85],["ROE","38%","Excellent",90],["ROIC","20%","Good",80],["FCF","$6.9B","Strong",80]]},momentum:{grade:"A",score:8.5,pct:85,trend:"↑ dominant",desc:"Momentum",metrics:[["1M","+12%","Top 10%",90],["3M","+28%","Top 8%",92],["6M","+45%","Top 5%",95],["1Y","+62.5%","Top 5%",95],["vs SPY","+50%","Massive outperform",95]]},revisions:{grade:"B",score:7.2,pct:72,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+3%","Positive",72],["EPS Rev 90D","+8%","Strong",80],["Buy Ratings","40/48=83%","Bullish",82],["Avg PT","$1,020","2% upside",50],["Beat Rate","7/8Q","Reliable",88]]}},compare:{ticker:"DIS",grade:"C",score:3.1}},
+
+  // ── SEMICONDUCTORS EXTENDED ─────────────────────────────────────────────
+  AVGO:{name:"Broadcom Inc.",sector:"SEMICONDUCTORS",price:"$231.10",change:18.9,mktCap:"$1.09T Market Cap",overallScore:4.5,recommendation:"STRONG BUY",factors:{valuation:{grade:"B",score:7.0,pct:70,trend:"↑ reasonable",desc:"Αποτίμηση",metrics:[["Forward P/E","27×","Reasonable",68],["P/S","14×","Premium",58],["EV/EBITDA","22×","Good",72],["PEG","1.0","Attractive",80],["Div Yield","1.3%","Growing",65]]},growth:{grade:"A+",score:9.1,pct:91,trend:"↑↑ AI-custom chip",desc:"Ανάπτυξη",metrics:[["Rev Growth","+51%","Top 5%",95],["AI Rev","+150%+","Dominant",98],["Custom ASIC","#1 market","Strategic",95],["EPS Growth","+45%","Top 8%",92],["VMware Synergies","Above plan","+upside",80]]},profitability:{grade:"A+",score:9.3,pct:93,trend:"↑↑ elite",desc:"Κερδοφορία",metrics:[["Gross Margin","64%","Top 8%",92],["Net Margin","51%","Top 2%",98],["ROE","55%","Exceptional",95],["ROIC","20%","Top 10%",90],["FCF Margin","48%","Top 3%",97]]},momentum:{grade:"A",score:8.0,pct:80,trend:"↑ strong",desc:"Momentum",metrics:[["1M","+8%","Top 15%",85],["3M","+18%","Top 12%",88],["6M","+30%","Top 10%",90],["1Y","+18.9%","Strong",80],["vs Sector","+10%","Outperform",78]]},revisions:{grade:"A",score:8.4,pct:84,trend:"↑ bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+4%","Top 10%",88],["EPS Rev 90D","+10%","Top 8%",90],["Buy Ratings","36/40=90%","Bullish",90],["Avg PT","$265","15% upside",78],["Beat Rate","7/8Q","Strong",88]]}},compare:{ticker:"NVDA",grade:"A+",score:4.7}},
+
+  INTC:{name:"Intel Corporation",sector:"SEMICONDUCTORS",price:"$21.84",change:-54.8,mktCap:"$93.5B Market Cap",overallScore:1.8,recommendation:"SELL",factors:{valuation:{grade:"C",score:5.0,pct:50,trend:"→ cheap but value trap",desc:"Αποτίμηση",metrics:[["Forward P/E","22×","Looks cheap",50],["P/S","1.8×","Low",62],["EV/EBITDA","18×","Mid",55],["P/B","0.9×","Below book",65],["Div Yield","0%","Eliminated",30]]},growth:{grade:"F",score:1.2,pct:12,trend:"↓↓ severe decline",desc:"Ανάπτυξη",metrics:[["Rev Growth","-2%","Declining",22],["EPS Growth","-78%","Catastrophic",5],["Data Center","Losing share","-critical",10],["AI GPU","Minimal","-no position",8],["Foundry","Behind TSMC","Years away",15]]},profitability:{grade:"D",score:2.5,pct:25,trend:"↓↓ crisis",desc:"Κερδοφορία",metrics:[["Gross Margin","32%","Bottom 30%",28],["Net Margin","-15%","Losses",10],["ROE","-22%","Negative",8],["ROIC","-5%","Destroying value",10],["FCF","-$15B","Cash burn",5]]},momentum:{grade:"F",score:1.5,pct:15,trend:"↓↓ collapse",desc:"Momentum",metrics:[["1M","-5%","Weak",25],["3M","-18%","Poor",20],["6M","-30%","Bad",18],["1Y","-54.8%","Severe",10],["vs Sector","-75%","Catastrophic",5]]},revisions:{grade:"F",score:1.8,pct:18,trend:"↓↓ downgrades",desc:"EPS Revisions",metrics:[["EPS Rev 30D","-12%","Heavy cuts",12],["EPS Rev 90D","-35%","Massive cuts",8],["Buy Ratings","10/45=22%","Mostly sell",15],["Avg PT","$25","15% upside",42],["Beat Rate","2/8Q","Missing badly",20]]}},compare:{ticker:"AMD",grade:"B",score:3.4}},
+
+  // ── CLOUD / SOFTWARE ────────────────────────────────────────────────────
+  CRM:{name:"Salesforce, Inc.",sector:"ENTERPRISE SOFTWARE",price:"$338.75",change:8.2,mktCap:"$327.4B Market Cap",overallScore:3.9,recommendation:"BUY",factors:{valuation:{grade:"C",score:5.5,pct:55,trend:"→ fair",desc:"Αποτίμηση",metrics:[["Forward P/E","30×","Mid",58],["P/S","8.5×","Premium",52],["EV/EBITDA","25×","Mid",60],["PEG","1.8","Acceptable",62],["P/FCF","22×","Good",68]]},growth:{grade:"B",score:7.2,pct:72,trend:"↑ Agentforce",desc:"Ανάπτυξη",metrics:[["Rev Growth","+9%","Mid",65],["EPS Growth","+25%","Good",75],["Agentforce","Ramping","AI catalyst",80],["RPO Growth","+11%","Healthy backlog",72],["FY26 Guide","+8%","Conservative",62]]},profitability:{grade:"A",score:8.0,pct:80,trend:"↑ improving",desc:"Κερδοφορία",metrics:[["Gross Margin","77%","Top 8%",90],["Net Margin","19%","Good",75],["ROE","12%","Mid",58],["ROIC","8%","Improving",60],["FCF","$11.5B","Excellent",85]]},momentum:{grade:"B",score:6.5,pct:65,trend:"↑ recovering",desc:"Momentum",metrics:[["1M","+4%","Above avg",68],["3M","+10%","Good",72],["6M","+15%","Strong",75],["1Y","+8.2%","Moderate",62],["vs Peers","+3%","Inline",60]]},revisions:{grade:"B",score:7.0,pct:70,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+2%","Positive",68],["EPS Rev 90D","+5%","Moderate",65],["Buy Ratings","42/52=81%","Bullish",80],["Avg PT","$380","12% upside",72],["Beat Rate","6/8Q","Good",78]]}},compare:{ticker:"MSFT",grade:"A",score:4.4}},
+
+  NOW:{name:"ServiceNow, Inc.",sector:"ENTERPRISE SOFTWARE",price:"$1,052.00",change:31.4,mktCap:"$217.8B Market Cap",overallScore:4.4,recommendation:"STRONG BUY",factors:{valuation:{grade:"C",score:5.0,pct:50,trend:"→ premium but justified",desc:"Αποτίμηση",metrics:[["Forward P/E","52×","Premium",38],["P/S","16×","High",42],["EV/EBITDA","42×","High",45],["PEG","1.4","Acceptable",68],["P/FCF","40×","High",48]]},growth:{grade:"A+",score:9.0,pct:90,trend:"↑↑ AI-led",desc:"Ανάπτυξη",metrics:[["Rev Growth","+22%","Top 12%",88],["EPS Growth","+35%","Top 10%",90],["cRPO Growth","+22%","Healthy backlog",88],["AI Workflows","Accelerating","Key driver",88],["FY26 Guide","+21%","Beat likely",85]]},profitability:{grade:"A",score:8.5,pct:85,trend:"↑ excellent",desc:"Κερδοφορία",metrics:[["Gross Margin","79%","Top 5%",95],["Net Margin","20%","Good",78],["ROE","38%","Excellent",90],["ROIC","22%","Top 8%",90],["FCF Margin","28%","Excellent",88]]},momentum:{grade:"A",score:8.2,pct:82,trend:"↑ strong",desc:"Momentum",metrics:[["1M","+8%","Strong",80],["3M","+18%","Top 15%",85],["6M","+28%","Good",82],["1Y","+31.4%","Excellent",85],["vs Peers","+12%","Outperform",80]]},revisions:{grade:"A",score:8.5,pct:85,trend:"↑ bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+3.5%","Positive",82],["EPS Rev 90D","+9%","Strong",88],["Buy Ratings","52/58=90%","Near-consensus",90],["Avg PT","$1,150","9% upside",68],["Beat Rate","8/8Q","Perfect",99]]}},compare:{ticker:"CRM",grade:"B+",score:3.9}},
+
+  // ── CONSUMER / RETAIL ───────────────────────────────────────────────────
+  UBER:{name:"Uber Technologies, Inc.",sector:"MOBILITY / DELIVERY",price:"$82.54",change:12.8,mktCap:"$173.2B Market Cap",overallScore:4.0,recommendation:"BUY",factors:{valuation:{grade:"B",score:7.0,pct:70,trend:"↑ getting cheaper",desc:"Αποτίμηση",metrics:[["Forward P/E","28×","Reasonable",68],["P/S","4.2×","Fair",70],["EV/EBITDA","30×","Mid",62],["PEG","0.8","Attractive",80],["P/FCF","25×","Good",72]]},growth:{grade:"A",score:8.0,pct:80,trend:"↑ strong",desc:"Ανάπτυξη",metrics:[["Rev Growth","+16%","Top 20%",80],["Trips Growth","+18%","Healthy",80],["Freight Growth","+8%","Recovery",60],["Membership","Expanding","Loyalty driver",72],["AV Partnership","Future upside","Strategic",65]]},profitability:{grade:"B",score:7.2,pct:72,trend:"↑ improving",desc:"Κερδοφορία",metrics:[["Gross Margin","40%","Mid",62],["Net Margin","15%","First full year",72],["ROE","60%","High leverage",70],["ROIC","12%","Improving",68],["FCF","$6.9B","Strong",80]]},momentum:{grade:"B",score:6.8,pct:68,trend:"↑ recovering",desc:"Momentum",metrics:[["1M","+5%","Good",70],["3M","+12%","Strong",75],["6M","+18%","Good",72],["1Y","+12.8%","Market-perf",68],["vs SPY","+1%","Inline",55]]},revisions:{grade:"B",score:7.0,pct:70,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+3%","Positive",72],["EPS Rev 90D","+7%","Good",75],["Buy Ratings","45/52=87%","Bullish",85],["Avg PT","$100","21% upside",82],["Beat Rate","6/8Q","Good",78]]}},compare:{ticker:"LYFT",grade:"C",score:2.8}},
+
+  SHOP:{name:"Shopify Inc.",sector:"E-COMMERCE / FINTECH",price:"$118.40",change:19.2,mktCap:"$149.8B Market Cap",overallScore:3.8,recommendation:"BUY",factors:{valuation:{grade:"D",score:3.0,pct:30,trend:"↓ expensive",desc:"Αποτίμηση",metrics:[["Forward P/E","68×","Premium",25],["P/S","14×","High",30],["EV/EBITDA","55×","High",28],["PEG","2.0","High",42],["P/FCF","42×","Mid-high",48]]},growth:{grade:"A",score:8.5,pct:85,trend:"↑↑ strong",desc:"Ανάπτυξη",metrics:[["Rev Growth","+26%","Top 15%",85],["GMV Growth","+24%","Strong",82],["Merchant Growth","+18%","Healthy",80],["Shopify Pay","Expanding","+revenue",78],["FY26 Est.","+23%","Confident",80]]},profitability:{grade:"B",score:7.0,pct:70,trend:"↑ improving",desc:"Κερδοφορία",metrics:[["Gross Margin","51%","Mid",62],["Net Margin","12%","Improving",65],["ROE","8%","Low",45],["ROIC","7%","Improving",48],["FCF","$1.5B","Growing",68]]},momentum:{grade:"B",score:7.0,pct:70,trend:"↑ recovery",desc:"Momentum",metrics:[["1M","+8%","Strong",78],["3M","+15%","Good",75],["6M","+20%","Good",72],["1Y","+19.2%","Strong",78],["vs SPY","+7%","Outperform",68]]},revisions:{grade:"B",score:6.8,pct:68,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+2.5%","Positive",68],["EPS Rev 90D","+6%","Good",70],["Buy Ratings","40/50=80%","Bullish",78],["Avg PT","$135","14% upside",72],["Beat Rate","6/8Q","Good",78]]}},compare:{ticker:"AMZN",grade:"A+",score:4.5}},
+
+  // ── FINANCE ─────────────────────────────────────────────────────────────
+  JPM:{name:"JPMorgan Chase & Co.",sector:"BANKING / FINANCIAL",price:"$282.64",change:24.5,mktCap:"$810.2B Market Cap",overallScore:4.1,recommendation:"BUY",factors:{valuation:{grade:"B",score:7.2,pct:72,trend:"↑ reasonable",desc:"Αποτίμηση",metrics:[["P/E","14×","Low for quality",78],["P/B","2.3×","Mid",65],["Div Yield","2.0%","Attractive",72],["P/TBV","2.5×","Fair",65],["Forward P/E","13×","Cheap",80]]},growth:{grade:"B",score:6.8,pct:68,trend:"↑ solid",desc:"Ανάπτυξη",metrics:[["Rev Growth","+12%","Top 22%",72],["EPS Growth","+18%","Good",72],["NII Growth","+8%","Healthy",65],["IB Revenue","+46%","Excellent",90],["Buybacks","$20B+","Shareholder return",80]]},profitability:{grade:"A",score:8.5,pct:85,trend:"↑ elite",desc:"Κερδοφορία",metrics:[["ROE","17%","Best-in-class",90],["ROTCE","21%","Excellent",92],["NIM","2.7%","Good",75],["Efficiency Ratio","56%","Well-run",78],["Net Income","$49B","Record",90]]},momentum:{grade:"A",score:8.0,pct:80,trend:"↑ strong",desc:"Momentum",metrics:[["1M","+6%","Strong",78],["3M","+14%","Top 15%",82],["6M","+20%","Good",80],["1Y","+24.5%","Excellent",82],["vs XLF","+8%","Outperform",75]]},revisions:{grade:"B",score:7.2,pct:72,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+2%","Positive",68],["EPS Rev 90D","+5%","Good",72],["Buy Ratings","26/35=74%","Moderate",68],["Avg PT","$295","4% upside",48],["Beat Rate","7/8Q","Reliable",85]]}},compare:{ticker:"GS",grade:"B+",score:3.8}},
+
+  V:{name:"Visa Inc.",sector:"PAYMENTS / FINTECH",price:"$351.24",change:11.8,mktCap:"$718.5B Market Cap",overallScore:4.3,recommendation:"STRONG BUY",factors:{valuation:{grade:"C",score:5.2,pct:52,trend:"→ premium justified",desc:"Αποτίμηση",metrics:[["Forward P/E","28×","Premium",52],["P/S","17×","High",45],["EV/EBITDA","22×","Mid",60],["PEG","1.6","Acceptable",62],["Div Yield","0.7%","Growing",55]]},growth:{grade:"B",score:7.5,pct:75,trend:"↑ steady",desc:"Ανάπτυξη",metrics:[["Rev Growth","+10%","Mid",70],["EPS Growth","+16%","Good",75],["Payments Volume","+8%","Healthy",70],["Cross-border","+16%","Strong",80],["Value-added Svcs","+22%","Expanding",82]]},profitability:{grade:"A+",score:9.6,pct:96,trend:"↑↑ exceptional",desc:"Κερδοφορία",metrics:[["Gross Margin","81%","Top 3%",97],["Net Margin","54%","Top 2%",98],["ROE","47%","Excellent",92],["ROIC","30%","Top 4%",96],["FCF Margin","50%","Top 2%",98]]},momentum:{grade:"B",score:6.8,pct:68,trend:"↑ solid",desc:"Momentum",metrics:[["1M","+4%","Above avg",68],["3M","+9%","Good",70],["6M","+14%","Good",72],["1Y","+11.8%","Market-perf",65],["vs XLF","+5%","Outperform",62]]},revisions:{grade:"B",score:7.0,pct:70,trend:"↑ positive",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+1.5%","Positive",65],["EPS Rev 90D","+4%","Moderate",68],["Buy Ratings","38/44=86%","Bullish",85],["Avg PT","$385","10% upside",70],["Beat Rate","8/8Q","Perfect",99]]}},compare:{ticker:"MA",grade:"A",score:4.3}},
+
+  // ── HEALTHCARE ──────────────────────────────────────────────────────────
+  LLY:{name:"Eli Lilly and Company",sector:"PHARMACEUTICALS",price:"$858.20",change:38.6,mktCap:"$813.1B Market Cap",overallScore:4.4,recommendation:"STRONG BUY",factors:{valuation:{grade:"D",score:3.2,pct:32,trend:"↓ very expensive",desc:"Αποτίμηση",metrics:[["Forward P/E","42×","Premium",32],["P/S","16×","Very high",28],["EV/EBITDA","38×","High",35],["PEG","1.2","Reasonable for growth",68],["P/FCF","45×","High",38]]},growth:{grade:"A+",score:9.5,pct:95,trend:"↑↑ GLP-1 dominance",desc:"Ανάπτυξη",metrics:[["Rev Growth","+32%","Top 5%",95],["EPS Growth","+120%","Top 2%",98],["Mounjaro/Zepbound","$10B+","Blockbuster",99],["Pipeline","15+ programs","Best-in-class",92],["FY26 Guide","+30%","Strong",95]]},profitability:{grade:"A",score:8.2,pct:82,trend:"↑ expanding",desc:"Κερδοφορία",metrics:[["Gross Margin","80%","Top 5%",95],["Net Margin","22%","Good",78],["ROE","75%","Exceptional",92],["ROIC","20%","Top 8%",88],["FCF","$8B","Growing fast",80]]},momentum:{grade:"A",score:8.5,pct:85,trend:"↑ dominant",desc:"Momentum",metrics:[["1M","+10%","Top 10%",90],["3M","+20%","Top 10%",90],["6M","+35%","Top 8%",92],["1Y","+38.6%","Excellent",88],["vs XLV","+28%","Massive outperform",92]]},revisions:{grade:"A+",score:9.0,pct:90,trend:"↑↑ bullish",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+5%","Top 6%",94],["EPS Rev 90D","+15%","Top 5%",95],["Buy Ratings","28/32=88%","Bullish",88],["Avg PT","$1,050","22% upside",85],["Beat Rate","8/8Q","Perfect",99]]}},compare:{ticker:"NVO",grade:"A",score:4.2}},
+
+  // ── CRYPTO / FINTECH ────────────────────────────────────────────────────
+  COIN:{name:"Coinbase Global, Inc.",sector:"CRYPTO / FINTECH",price:"$302.40",change:45.2,mktCap:"$76.8B Market Cap",overallScore:3.2,recommendation:"HOLD",factors:{valuation:{grade:"D",score:3.0,pct:30,trend:"↓ expensive",desc:"Αποτίμηση",metrics:[["Forward P/E","32×","Premium",38],["P/S","7.5×","High",42],["EV/EBITDA","25×","Mid-high",48],["P/B","4.5×","High",40],["P/FCF","28×","Mid",52]]},growth:{grade:"A",score:8.0,pct:80,trend:"↑ crypto-cycle",desc:"Ανάπτυξη",metrics:[["Rev Growth","+108%","Top 8%",92],["Transaction Rev","+150%","Bull market",95],["Stablecoin Rev","Growing","Recurring",72],["Int'l Expansion","Active","Positive",68],["Base L2","Scaling","Strategic",70]]},profitability:{grade:"B",score:6.5,pct:65,trend:"↑ cyclical",desc:"Κερδοφορία",metrics:[["Gross Margin","67%","Good",78],["Net Margin","25%","Strong (bull mkt)",70],["ROE","18%","Good",72],["ROIC","12%","Mid",65],["FCF","$2.1B","Healthy",68]]},momentum:{grade:"A",score:8.5,pct:85,trend:"↑ crypto bull",desc:"Momentum",metrics:[["1M","+15%","Top 10%",90],["3M","+30%","Top 8%",92],["6M","+50%","Top 5%",95],["1Y","+45.2%","Excellent",90],["vs BTC","Inline","Beta play",55]]},revisions:{grade:"C",score:5.0,pct:50,trend:"→ mixed",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+5%","Positive",68],["EPS Rev 90D","-2%","Mixed",48],["Buy Ratings","20/35=57%","Mixed",50],["Avg PT","$350","16% upside",72],["Beat Rate","5/8Q","Decent",62]]}},compare:{ticker:"MSTR",grade:"D",score:2.0}},
+
+  // ── ENERGY / EV ECOSYSTEM ────────────────────────────────────────────────
+  PLTR:{name:"Palantir Technologies Inc.",sector:"AI / DEFENSE TECH",price:"$118.62",change:285.0,mktCap:"$268.8B Market Cap",overallScore:3.5,recommendation:"HOLD",factors:{valuation:{grade:"F",score:1.0,pct:10,trend:"↓↓ extreme premium",desc:"Αποτίμηση",metrics:[["Forward P/E","200×","Extreme",5],["P/S","55×","Bottom 3%",5],["EV/EBITDA","150×","Extreme",8],["PEG","4.0","Very high",15],["P/FCF","120×","Extreme",8]]},growth:{grade:"A",score:8.2,pct:82,trend:"↑↑ AIP momentum",desc:"Ανάπτυξη",metrics:[["Rev Growth","+36%","Top 12%",88],["US Commercial","+55%","Accelerating",92],["Gov't Revenue","+40%","Strong",88],["AIP Bootcamps","1000+ closings","Viral sales",90],["FY26 Guide","+31%","Above market",85]]},profitability:{grade:"B",score:7.0,pct:70,trend:"↑ expanding",desc:"Κερδοφορία",metrics:[["Gross Margin","80%","Excellent",90],["Net Margin","18%","Good (GAAP)",72],["ROE","12%","Mid",58],["ROIC","10%","Mid",60],["FCF Margin","28%","Good",80]]},momentum:{grade:"A+",score:9.5,pct:95,trend:"↑↑ dominant",desc:"Momentum",metrics:[["1M","+20%","Top 5%",95],["3M","+45%","Top 3%",97],["6M","+95%","Top 2%",98],["1Y","+285%","Top 1%",99],["vs SPY","+273%","Phenomenal",99]]},revisions:{grade:"C",score:5.5,pct:55,trend:"→ mixed",desc:"EPS Revisions",metrics:[["EPS Rev 30D","+3%","Positive",65],["EPS Rev 90D","+8%","Good",72],["Buy Ratings","12/28=43%","Mixed",38],["Avg PT","$90","-24% below",20],["Beat Rate","7/8Q","Strong",88]]}},compare:{ticker:"BBAI",grade:"D",score:2.0}}
+};
+
+let currentStock = null;
+
+function gradeColor(g){const m={'A+':'gAp','A':'gA','B':'gB','B+':'gA','C':'gC','D':'gD','F':'gF'};return m[g]||'gC'}
+
+function selectPreset(ticker,el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('searchInput').value=ticker;
+  analyzeStock(ticker);
+}
+
+// ══════════════════════════════════════
+// THE FIX: fetchWithTimeout
+// Λύνει το "stuck loading" — αν το API
+// δεν απαντήσει σε 5 sec, κάνει abort
+// και πέφτει στα mock data αυτόματα.
+// ══════════════════════════════════════
+async function fetchWithTimeout(url, ms=5000){
+  const ctrl = new AbortController();
+  const tid = setTimeout(()=>ctrl.abort(), ms);
+  try{
+    const res = await fetch(url, {signal: ctrl.signal});
+    clearTimeout(tid);
+    return res;
+  } catch(e){
+    clearTimeout(tid);
+    throw e;
+  }
+}
+
+const AV_KEY='3DF6QRUWMP3995TN';
+
+async function fetchLiveData(ticker){
+  try{
+    const [qRes,oRes] = await Promise.all([
+      fetchWithTimeout(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${AV_KEY}`,5000),
+      fetchWithTimeout(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${AV_KEY}`,5000)
+    ]);
+    const qj=await qRes.json();
+    const oj=await oRes.json();
+
+    // Rate limit / API limit detection — αυτό ήταν η αιτία του bug
+    if(qj['Note']||qj['Information']||oj['Note']||oj['Information']){
+      console.warn('[QuantEdge] API rate limit — χρήση mock data');
+      return null;
+    }
+
+    const q=qj['Global Quote'];
+    const o=oj;
+    if(!q||!q['05. price']||!o||!o.Symbol)return null;
+
+    const price=parseFloat(q['05. price'])||0;
+    const changePct=parseFloat(q['10. change percent'])||0;
+    const high52=parseFloat(o['52WeekHigh'])||0;
+    const low52=parseFloat(o['52WeekLow'])||0;
+    const mktCap=parseInt(o['MarketCapitalization'])||0;
+    const pe=parseFloat(o['PERatio'])||0;
+    const fwdPE=parseFloat(o['ForwardPE'])||0;
+    const ps=parseFloat(o['PriceToSalesRatioTTM'])||0;
+    const pb=parseFloat(o['PriceToBookRatio'])||0;
+    const evEbitda=parseFloat(o['EVToEBITDA'])||0;
+    const grossRev=parseFloat(o['GrossProfitTTM'])||0;
+    const totalRev=parseFloat(o['RevenueTTM'])||1;
+    const grossM=totalRev>0?(grossRev/totalRev*100):0;
+    const netM=parseFloat(o['ProfitMargin'])*100||0;
+    const roe=parseFloat(o['ReturnOnEquityTTM'])*100||0;
+    const revGrowth=parseFloat(o['QuarterlyRevenueGrowthYOY'])*100||0;
+    const epsGrowth=parseFloat(o['QuarterlyEarningsGrowthYOY'])*100||0;
+    const beta=parseFloat(o['Beta'])||1;
+    const divYield=parseFloat(o['DividendYield'])*100||0;
+    const analystPT=parseFloat(o['AnalystTargetPrice'])||0;
+    const sector=o['Sector']||'N/A';
+    const name=o['Name']||ticker;
+
+    const valScore=scoreValuation(pe,fwdPE,ps,evEbitda);
+    const growScore=scoreGrowth(revGrowth,epsGrowth);
+    const profScore=scoreProfitability(grossM,netM,roe);
+    const range52=high52-low52;
+    const pos52=range52>0?((price-low52)/range52)*10:5;
+    const momScore=Math.min(10,Math.max(0,pos52));
+    const upside=analystPT>0?((analystPT-price)/price)*100:0;
+    const revScore=upside>30?9:upside>15?7.5:upside>5?6:upside>0?4.5:3;
+    const overall=(valScore*0.20)+(growScore*0.25)+(profScore*0.25)+(momScore*0.15)+(revScore*0.15);
+    const overallScore=Math.min(5,Math.max(1,overall/2));
+    const rec=overallScore>=4.5?'STRONG BUY':overallScore>=3.8?'BUY':overallScore>=2.8?'HOLD':'SELL';
+
+    return{
+      name,sector,
+      price:`$${price.toFixed(2)}`,
+      change:parseFloat(changePct.toFixed(1)),
+      mktCap:formatMktCap(mktCap),
+      overallScore:parseFloat(overallScore.toFixed(1)),
+      recommendation:rec,
+      factors:{
+        valuation:{grade:numToGrade(valScore),score:parseFloat(valScore.toFixed(1)),pct:Math.round(valScore*10),trend:pe<20?'↑ attractive':pe<35?'→ fair':'↓ expensive',desc:'Αποτίμηση vs Benchmarks',metrics:[
+          ['P/E (TTM)',pe>0?pe.toFixed(1)+'×':'N/A',pe<20?'Attractive':pe<35?'Fair':'Expensive',pe>0?Math.max(5,Math.min(95,Math.round(100-pe))):null],
+          ['Forward P/E',fwdPE>0?fwdPE.toFixed(1)+'×':'N/A',fwdPE<20?'Cheap':'Premium',fwdPE>0?Math.max(5,Math.min(95,Math.round(100-fwdPE))):null],
+          ['P/S Ratio',ps>0?ps.toFixed(1)+'×':'N/A',ps<5?'Good value':ps<15?'Fair':'Rich',ps>0?Math.max(5,Math.min(95,Math.round(80-ps*2))):null],
+          ['EV/EBITDA',evEbitda>0?evEbitda.toFixed(1)+'×':'N/A',evEbitda<15?'Cheap':'Premium',evEbitda>0?Math.max(5,Math.min(95,Math.round(90-evEbitda))):null],
+          ['P/B Ratio',pb>0?pb.toFixed(1)+'×':'N/A',pb<3?'Fair':'Premium',pb>0?Math.max(5,Math.min(95,Math.round(80-pb*5))):null],
+        ]},
+        growth:{grade:numToGrade(growScore),score:parseFloat(growScore.toFixed(1)),pct:Math.round(growScore*10),trend:revGrowth>20?'↑↑ strong':revGrowth>5?'↑ solid':'→ modest',desc:'Ανάπτυξη Εσόδων/EPS',metrics:[
+          ['Revenue Growth YoY',revGrowth.toFixed(1)+'%',revGrowth>20?'Strong':revGrowth>5?'Moderate':'Weak',Math.max(5,Math.min(95,Math.round(50+revGrowth)))],
+          ['EPS Growth YoY',epsGrowth.toFixed(1)+'%',epsGrowth>15?'Strong':'Moderate',Math.max(5,Math.min(95,Math.round(50+epsGrowth*0.5)))],
+          ['52W High','$'+high52.toFixed(2),'Historical high',80],
+          ['52W Low','$'+low52.toFixed(2),'Historical low',20],
+          ['Beta',beta.toFixed(2),beta>1.5?'High volatility':'Moderate',50],
+        ]},
+        profitability:{grade:numToGrade(profScore),score:parseFloat(profScore.toFixed(1)),pct:Math.round(profScore*10),trend:netM>15?'↑ strong':'→ moderate',desc:'Κερδοφορία & Αποδόσεις',metrics:[
+          ['Gross Margin',grossM>0?grossM.toFixed(1)+'%':'N/A',grossM>50?'Excellent':grossM>30?'Good':'Low',Math.max(5,Math.min(95,Math.round(grossM)))],
+          ['Net Margin',netM.toFixed(1)+'%',netM>20?'Excellent':netM>10?'Good':'Low',Math.max(5,Math.min(95,Math.round(netM*2)))],
+          ['ROE',roe.toFixed(1)+'%',roe>15?'Strong':'Moderate',Math.max(5,Math.min(95,Math.round(roe*2)))],
+          ['Dividend Yield',divYield>0?divYield.toFixed(2)+'%':'None',divYield>2?'Income stock':'Growth focus',divYield>0?Math.round(divYield*20):20],
+          ['Analyst Target',analystPT>0?'$'+analystPT.toFixed(2):'N/A',upside>0?'+'+upside.toFixed(1)+'% upside':upside.toFixed(1)+'%',Math.max(5,Math.min(95,Math.round(50+upside)))],
+        ]},
+        momentum:{grade:numToGrade(momScore),score:parseFloat(momScore.toFixed(1)),pct:Math.round(momScore*10),trend:pos52>7?'↑↑ near highs':pos52>4?'→ mid range':'↓ near lows',desc:'Price Momentum',metrics:[
+          ['Τρέχουσα Τιμή','$'+price.toFixed(2),'Live price',50],
+          ['Μεταβολή σήμερα',changePct.toFixed(2)+'%',changePct>=0?'Positive':'Negative',changePct>=0?65:35],
+          ['52W High','$'+high52.toFixed(2),((price/high52-1)*100).toFixed(1)+'% from high',Math.round((price/high52)*100)],
+          ['52W Low','$'+low52.toFixed(2),((price/low52-1)*100).toFixed(1)+'% from low',Math.round(Math.min(95,(price-low52)/(high52-low52)*100))],
+          ['Θέση στο 52W range',Math.round((price-low52)/(high52-low52)*100)+'%',pos52>6?'Strong position':'Mid/Low range',Math.round((price-low52)/(high52-low52)*100)],
+        ]},
+        revisions:{grade:numToGrade(revScore),score:parseFloat(revScore.toFixed(1)),pct:Math.round(revScore*10),trend:upside>20?'↑↑ bullish':upside>5?'↑ positive':'→ neutral',desc:'Analyst Consensus',metrics:[
+          ['Analyst Target',analystPT>0?'$'+analystPT.toFixed(2):'N/A','Consensus target',Math.max(10,Math.min(90,Math.round(50+upside)))],
+          ['Implied Upside',upside.toFixed(1)+'%',upside>20?'Significant upside':upside>0?'Modest upside':'Downside risk',Math.max(10,Math.min(90,Math.round(50+upside)))],
+          ['Sector',sector,'Industry classification',50],
+          ['Exchange',o['Exchange']||'N/A',o['Currency']||'USD',50],
+          ['Beta',beta.toFixed(2),beta>1.5?'High volatility':'Moderate',50],
+        ]}
+      },
+      compare:{ticker:'SPY',grade:'B',score:3.5}
+    };
+  }catch(e){
+    console.error('[QuantEdge] fetchLiveData error:',e.name,e.message);
+    return null;
+  }
+}
+
+function scoreValuation(pe,fwdPE,ps,evEbitda){let s=5;if(pe>0&&pe<15)s+=2;else if(pe>0&&pe<25)s+=1;else if(pe>40)s-=2;else if(pe>60)s-=3;if(fwdPE>0&&fwdPE<20)s+=1;else if(fwdPE>35)s-=1;if(ps>0&&ps<5)s+=1;else if(ps>15)s-=1;if(evEbitda>0&&evEbitda<15)s+=1;else if(evEbitda>30)s-=1;return Math.max(1,Math.min(10,s))}
+function scoreGrowth(rg,eg){let s=5;if(rg>50)s+=3;else if(rg>20)s+=2;else if(rg>10)s+=1;else if(rg<0)s-=2;if(eg>30)s+=2;else if(eg>10)s+=1;else if(eg<0)s-=1;return Math.max(1,Math.min(10,s))}
+function scoreProfitability(gm,nm,roe){let s=5;if(gm>60)s+=2;else if(gm>40)s+=1;else if(gm<20)s-=1;if(nm>25)s+=2;else if(nm>10)s+=1;else if(nm<0)s-=2;if(roe>20)s+=1;else if(roe<5)s-=1;return Math.max(1,Math.min(10,s))}
+function numToGrade(n){if(n>=9)return'A+';if(n>=7.5)return'A';if(n>=6)return'B';if(n>=4.5)return'C';if(n>=3)return'D';return'F'}
+function formatMktCap(n){if(n>=1e12)return'$'+(n/1e12).toFixed(2)+'T Market Cap';if(n>=1e9)return'$'+(n/1e9).toFixed(1)+'B Market Cap';if(n>=1e6)return'$'+(n/1e6).toFixed(0)+'M Market Cap';return'$'+n}
+
+async function analyzeStock(forceTicker){
+  const ticker=(forceTicker||document.getElementById('searchInput').value.trim().toUpperCase());
+  if(!ticker)return;
+
+  const bar=document.getElementById('loadingBar');
+  bar.style.width='30%';bar.style.opacity='1';
+
+  document.getElementById('scoreArea').style.display='block';
+  document.getElementById('factorGrid').innerHTML='';
+  bar.style.width='60%';
+
+  // Απευθείας mock data — χωρίς API call
+  let data=STOCKS[ticker];
+
+  bar.style.width='100%';
+  setTimeout(()=>{bar.style.opacity='0';bar.style.width='0%'},400);
+
+  if(!data){showNotFound(ticker);return;}
+
+  currentStock={ticker,...data};
+  document.getElementById('scoreArea').scrollIntoView({behavior:'smooth',block:'start'});
+  renderHeader(ticker,data);
+  renderFactors(data);
+  closeDetail();
+  setTimeout(()=>{renderRadar(data);renderBars(data)},100);
+  renderCompare(data);
+}
+
+function showNotFound(ticker){
+  document.getElementById('scoreArea').style.display='block';
+  document.getElementById('scoreHeader').innerHTML=`
+    <div style="grid-column:1/-1;text-align:center;padding:20px;">
+      <div style="font-size:2rem;margin-bottom:12px;">🔍</div>
+      <div style="font-size:1.1rem;color:#fff;margin-bottom:6px;">"${ticker}" δεν βρέθηκε</div>
+      <div style="font-size:13px;color:var(--text-dim)">Δοκίμασε: NVDA, META, AAPL, MSFT, GOOGL, AMZN, TSLA, AVGO, AMD, MRVL, CRDO, NFLX, CRM, NOW, PLTR, UBER, V, JPM, LLY, COIN, INTC, SHOP</div>
+    </div>`;
+  document.getElementById('factorGrid').innerHTML='';
+}
+
+function renderHeader(ticker,data){
+  document.getElementById('hTicker').textContent=ticker;
+  document.getElementById('hName').textContent=data.name;
+  document.getElementById('hSector').textContent=data.sector;
+  document.getElementById('hPrice').textContent=data.price;
+  const chEl=document.getElementById('hChange');
+  const sign=data.change>=0?'+':'';
+  chEl.textContent=`${sign}${data.change}% (1Y)`;
+  chEl.className=`change ${data.change>=0?'up':'down'}`;
+  document.getElementById('hMktCap').textContent=data.mktCap;
+  const recEl=document.getElementById('hRec');
+  recEl.textContent=data.recommendation;
+  const rm={'STRONG BUY':'rec-strong-buy','BUY':'rec-buy','HOLD':'rec-hold','SELL':'rec-sell'};
+  recEl.className=`rec-badge ${rm[data.recommendation]||'rec-hold'}`;
+  document.getElementById('scoreNum').textContent=data.overallScore.toFixed(1);
+  const pct=(data.overallScore/5)*100;
+  document.getElementById('scoreCircle').style.setProperty('--pct',pct+'%');
+}
+
+function renderFactors(data){
+  const grid=document.getElementById('factorGrid');
+  const icons={valuation:'💵',growth:'📈',profitability:'⚙️',momentum:'🚀',revisions:'📊'};
+  const names={valuation:'VALUATION',growth:'GROWTH',profitability:'PROFIT',momentum:'MOMENTUM',revisions:'REVISIONS'};
+  grid.innerHTML='';
+  Object.entries(data.factors).forEach(([key,f],i)=>{
+    const card=document.createElement('div');
+    card.className='factor-card';
+    card.style.animationDelay=`${i*0.07}s`;
+    card.onclick=()=>openDetail(key,data);
+    card.innerHTML=`
+      <div class="factor-icon">${icons[key]}</div>
+      <div class="factor-name">${names[key]}</div>
+      <div class="grade-badge ${gradeColor(f.grade)}">${f.grade}</div>
+      <div class="grade-score">${f.score.toFixed(1)}/10 · ${f.pct}th %ile</div>
+      <div style="color:var(--text-dim);font-size:11px;margin-top:6px">${f.trend}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function openDetail(factorKey,data){
+  const panel=document.getElementById('detailPanel');
+  const f=data.factors[factorKey];
+  const icons={valuation:'💵',growth:'📈',profitability:'⚙️',momentum:'🚀',revisions:'📊'};
+  document.getElementById('detailTitle').innerHTML=`${icons[factorKey]} ${f.desc} — <span class="grade-badge ${gradeColor(f.grade)}" style="font-size:1.1rem">${f.grade}</span>`;
+  const tbody=document.getElementById('detailTable');
+  tbody.innerHTML=f.metrics.map(([label,val,note,pct])=>`
+    <tr>
+      <td>${label}</td>
+      <td>${val}</td>
+      <td style="color:var(--text-dim)">${note}</td>
+      <td>${pct!==null&&pct!==undefined?`
+        <div class="mini-bar-wrap">
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:${pct>=75?'var(--grade-a)':pct>=50?'var(--grade-c)':'var(--grade-f)'}"></div></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);width:30px;text-align:right">${pct}%</span>
+        </div>`:''}</td>
+    </tr>`).join('');
+  document.querySelectorAll('.factor-card').forEach(c=>c.classList.remove('active-card'));
+  const cards=document.querySelectorAll('.factor-card');
+  const idx=Object.keys(data.factors).indexOf(factorKey);
+  if(cards[idx])cards[idx].classList.add('active-card');
+  panel.classList.add('visible');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeDetail(){
+  document.getElementById('detailPanel').classList.remove('visible');
+  document.querySelectorAll('.factor-card').forEach(c=>c.classList.remove('active-card'));
+}
+
+function renderCompare(data){
+  const sec=document.getElementById('compareSection');
+  const c=data.compare;
+  sec.innerHTML=`
+    <h4>⚖️ QUICK COMPARE — ${currentStock.ticker} vs ${c.ticker}</h4>
+    <div class="compare-row">
+      <div class="compare-stock" onclick="selectPreset('${currentStock.ticker}',null)">
+        <div style="font-size:1.1rem;font-weight:800;color:#fff">${currentStock.ticker}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${currentStock.name.split(',')[0]}</div>
+        <div class="grade-badge ${gradeColor('B+')}" style="font-size:1.4rem;margin-top:6px">Score: ${currentStock.overallScore.toFixed(1)}</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">${currentStock.recommendation}</div>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="compare-stock" onclick="selectPreset('${c.ticker}',null)">
+        <div style="font-size:1.1rem;font-weight:800;color:#fff">${c.ticker}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:2px">Click to analyze →</div>
+        <div class="grade-badge ${gradeColor(c.grade)}" style="font-size:1.4rem;margin-top:6px">${c.grade} · ${c.score.toFixed(1)}/5</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">View full analysis</div>
+      </div>
+    </div>`;
+}
+
+function renderRadar(data){
+  const canvas=document.getElementById('radarCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2+10,R=Math.min(W,H)/2-50;
+  ctx.clearRect(0,0,W,H);
+  const labels=['Valuation','Growth','Profitability','Momentum','Revisions'];
+  const scores=Object.values(data.factors).map(f=>f.pct/100);
+  const n=labels.length;
+  const angle=i=>(i*2*Math.PI/n)-Math.PI/2;
+  const pt=(i,r)=>[cx+r*Math.cos(angle(i)),cy+r*Math.sin(angle(i))];
+  for(let ring=1;ring<=5;ring++){ctx.beginPath();for(let i=0;i<n;i++){const[x,y]=pt(i,R*ring/5);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.closePath();ctx.strokeStyle='#1f2640';ctx.lineWidth=1;ctx.stroke()}
+  for(let i=0;i<n;i++){ctx.beginPath();ctx.moveTo(cx,cy);const[x,y]=pt(i,R);ctx.lineTo(x,y);ctx.strokeStyle='#1f2640';ctx.lineWidth=1;ctx.stroke()}
+  ctx.beginPath();scores.forEach((s,i)=>{const[x,y]=pt(i,R*s);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.closePath();ctx.fillStyle='rgba(79,255,176,0.08)';ctx.fill();ctx.strokeStyle='#4fffb0';ctx.lineWidth=2;ctx.stroke();
+  scores.forEach((s,i)=>{const[x,y]=pt(i,R*s);ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle='#4fffb0';ctx.fill()});
+  ctx.fillStyle='#6b7799';ctx.font='11px Syne,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  labels.forEach((lbl,i)=>{const[x,y]=pt(i,R+22);ctx.fillText(lbl,x,y)});
+}
+
+function renderBars(data){
+  const canvas=document.getElementById('barCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const names=['Valuation','Growth','Profitability','Momentum','Revisions'];
+  const values=Object.values(data.factors).map(f=>f.pct);
+  const barH=28,gap=16,startY=30,maxW=W-130;
+  ctx.font='11px JetBrains Mono,monospace';ctx.textBaseline='middle';
+  values.forEach((v,i)=>{
+    const y=startY+i*(barH+gap);
+    const w=(v/100)*maxW;
+    const color=v>=80?'#4fffb0':v>=60?'#7dd8ff':v>=40?'#ffda6b':v>=20?'#ff9248':'#ff4d6d';
+    ctx.fillStyle='#6b7799';ctx.textAlign='left';ctx.font='11px JetBrains Mono,monospace';ctx.fillText(names[i],0,y+barH/2);
+    ctx.fillStyle='#131829';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(95,y,maxW,barH,4);else ctx.rect(95,y,maxW,barH);ctx.fill();
+    if(w>0){ctx.fillStyle=color+'22';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(95,y,w,barH,4);else ctx.rect(95,y,w,barH);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(95,y,w,barH,4);else ctx.rect(95,y,w,barH);ctx.stroke()}
+    ctx.fillStyle=color;ctx.textAlign='right';ctx.font='12px JetBrains Mono,monospace';ctx.fillText(`${v}%`,95+maxW+32,y+barH/2);
+  });
+}
+
+document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')analyzeStock()});
+
+function showToast(msg){
+  const ex=document.querySelector('.qe-toast');if(ex)ex.remove();
+  const t=document.createElement('div');t.className='qe-toast';
+  t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:1002;box-shadow:0 8px 24px rgba(0,0,0,0.5);white-space:nowrap;animation:fadeUp 0.3s ease';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3500);
+}
+
+// PWA
+// Unregister any old service workers that may be caching old files
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(reg=>reg.unregister());
+  });
+}
+
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredInstallPrompt=e;
+  if(!localStorage.getItem('qe-install-dismissed'))
+    setTimeout(()=>document.getElementById('installBanner').classList.add('visible'),3000);
+});
+document.getElementById('btnInstall').addEventListener('click',async()=>{
+  if(!deferredInstallPrompt)return;
+  deferredInstallPrompt.prompt();
+  const{outcome}=await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;
+  document.getElementById('installBanner').classList.remove('visible');
+  if(outcome==='accepted')showToast('✅ QuantEdge εγκαταστάθηκε!');
+});
+function dismissInstall(){document.getElementById('installBanner').classList.remove('visible');localStorage.setItem('qe-install-dismissed','1')}
+
+function updateOnlineStatus(){
+  const t=document.getElementById('offlineToast');
+  navigator.onLine?t.classList.remove('visible'):t.classList.add('visible');
+}
+window.addEventListener('online',updateOnlineStatus);
+window.addEventListener('offline',updateOnlineStatus);
+updateOnlineStatus();
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>document.getElementById('splash').classList.add('hidden'),1600);
+  setTimeout(()=>selectPreset('NVDA',document.querySelector('.chip.active')),400);
+  const params=new URLSearchParams(window.location.search);
+  const t=params.get('ticker');
+  if(t&&STOCKS[t.toUpperCase()]){
+    setTimeout(()=>{selectPreset(t.toUpperCase(),null);document.querySelectorAll('.chip').forEach(c=>{if(c.textContent===t.toUpperCase())c.classList.add('active')})},1800);
+  }
+});
+
+function bnav(tab,el){
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+  if(tab==='home')document.getElementById('searchInput').focus();
+  else if(tab==='watchlist')showToast('⭐ Watchlist — coming in v1.1');
+  else if(tab==='compare'){const s=document.getElementById('compareSection');if(s)s.scrollIntoView({behavior:'smooth'})}
+  else if(tab==='alerts')requestNotificationPermission();
+}
+async function requestNotificationPermission(){
+  if(!('Notification' in window))return showToast('Notifications not supported');
+  if(Notification.permission==='granted')return showToast('🔔 Notifications ήδη ενεργά');
+  const p=await Notification.requestPermission();
+  if(p==='granted'){showToast('🔔 Alerts ενεργοποιήθηκαν!');new Notification('QuantEdge Alerts',{body:'Θα λαμβάνεις ειδοποιήσεις για price alerts.',icon:'/icons/icon-192.png'})}
+}
+</script>
+</body>
+</html>
